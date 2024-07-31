@@ -1,0 +1,55 @@
+dataContractSpecification: v1.0
+metadata:
+  productId: "ds-ut-ad-log-combined"
+  contractName: "Ad Log Combined Latest"
+  contractId: "ds-ut-ad-log-combined-latest"
+  version: "1.0.0"
+  startTime: 2024-07-01
+  access: https://coda.io/d/Data-Strategy_d09EgYAxEQa/Big-Query_suTNy#_luC3Q
+  description: >
+    This event is a combination of the ad log business ads and the ad log deleted ads. 
+    It contains the latest version of each (ad) id.
+  links:
+    - https://coda.io/d/Data-Strategy_d09EgYAxEQa/Metadata_suJWc#User-Tracking-Metadata_tuaq5/r89&view=full
+model:
+  containsPII: true
+  format: avro
+  schema: local://avro/domain/usertracking/datasources/ad-log-events/ad-log-business-ads.avsc
+output:
+  storage:
+    platform: gcp
+    system: bigquery
+    projectId: mo-data-lake-prod-k4pi
+    dataset: ad_log_events
+    table: ad_log_combined_latest
+slas:
+  - property: frequency
+    value: "0 3 * * *" # every day at 3:00am.
+    unit: cron
+  - property: retention
+    value: "2"
+    unit: year
+quality:
+  - name: freshness
+    toolName: gx
+    description: checks that there's data for each partition.
+    dimension:
+      name: timeliness
+    links:
+      - https://airflow.mobilede-ds-pro-01.529745166931.cre.mpi-internal.com/dags/mobilede-ds-platform-dq-datalake/grid
+    toolSpecification:
+      checkpointName: data_lake.ad_log_events
+      expectationSuiteName: data_lake.ad_log_events.ad_log_combined_latest
+  - name: average-count
+    toolName: gx
+    description: checks if the count of events per day is in the average +/- 2.5 stddev of the usual count for that day of the week, on the the last weeks.
+    dimension:
+      name: timeliness
+    links:
+      - https://airflow.mobilede-ds-pro-01.529745166931.cre.mpi-internal.com/dags/mobilede-ds-platform-dq-datalake/grid
+    toolSpecification:
+      checkpointName: data_lake.ad_log_events
+      expectationSuiteName: common.event_avg
+inputs:
+  - contract: ds-ut-ad-log-business-ads
+  - contract: ds-ut-ad-log-deleted-ads

@@ -1,0 +1,31 @@
+id: ds-ut-ad-log
+name: Ad Log
+maturity: active
+dataProductOwner:
+  tenant: mobilede
+  dataDomain: pte-data-strategy
+  contact: https://tech.tools.mobint.io/application-inventory/t/mob-data-strategy
+dataAssetOwner:
+  tenant: mobilede
+  dataDomain: pte-team-capabilities
+  contact: https://tech.tools.mobint.io/application-inventory/t/mob-team-x
+description:
+  purpose: >
+    Offers detailed information about current and historical (2 years old) vehicle listings on the mobile.de platform. 
+    This includes data such as: basic ad details (id, version, site, source channel, quality status, lifecycle status, visibility settings), 
+    vehicle details (make, model, price, technical specs like mileage, fuel type, emissions), seller/dealer information (contact details, company info, location),
+    media assets (images, videos), additional ad features (highlights, financing options, delivery options), pricing history, online buying eligibility status, etc.
+
+    It supports analyses of all the active vehicle listings on our platform over the last 2 years. 
+    This comprehensive data can be useful for various analytic purposes such as: powering the search and browsing experience for users, 
+    generating analytics and insights on listing trends, pricing, popular models etc, enabling additional product features like financing, delivery logistics etc., 
+    storing an audit trail of all listing updates and changes. 
+
+  limitation: > 
+    Only last 2 years of data is available since that's the retention period for GDPR. 
+    If a dealer deletes an add, the VIN will be removed from all occurences for that ad (due to GDPR restrictions).
+    Data is available only on the day after it's produced.
+  links:
+    - https://github.mpi-internal.com/mobile-de/mobile-ad-json-schema/blob/master/docs/mobile-ad-schema.json
+
+

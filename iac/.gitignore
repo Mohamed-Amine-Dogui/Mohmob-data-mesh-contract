@@ -1,0 +1,6 @@
+/backend.tf
+/provider.tf
+/locals.tf
+/tfplan
+/.terraform
+/.terraform.lock.hcl

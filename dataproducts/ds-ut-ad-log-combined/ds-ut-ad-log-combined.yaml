@@ -1,0 +1,14 @@
+id: ds-ut-ad-log-combined
+name: Ad Log Combined Latest
+maturity: active
+dataProductOwner:
+  tenant: mobilede
+  dataDomain: pte-data-strategy
+  contact: https://tech.tools.mobint.io/application-inventory/t/mob-data-strategy
+description:
+  purpose: >
+    "Current" latest version of the listings, produced by combining Ad Log Business Ads and Ad Log Deleted ads.
+  limitation: >
+    Only last 2 years of data because of GDPR. Data is updated only once a day.
+
+

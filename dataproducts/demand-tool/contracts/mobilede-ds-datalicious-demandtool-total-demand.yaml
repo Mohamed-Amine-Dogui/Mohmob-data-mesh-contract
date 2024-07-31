@@ -1,0 +1,79 @@
+dataContractSpecification: "v1.0"
+metadata:
+  contractName: "Total Demand"
+  contractId: "mobilede-ds-datalicious-demandtool-total-demand"
+  productId: "demand-tool"
+  version: "1.0.0"
+  startTime: 2024-02-23
+  access: https://coda.io/d/Data-Strategy_d09EgYAxEQa/Big-Query_suTNy#_luC3Q
+  description: >
+    Total Demand offers totals for selected demand types that an ad has had over time (totals were imported from old system in MongoDB).
+    The given `ad__sellerid` contains information about the seller/customer id. You can also use the ad__id, to identify an ad.
+output:
+  storage:
+    platform: gcp
+    system: bigquery
+    projectId: mo-data-lake-prod-k4pi
+    dataset: demand
+    table: dealer_event_counts_deduplicated
+    view: total_demand
+model:
+  containsPII: true
+  format: avro
+  schema: >
+    {
+      "name": "TotalDemand",
+      "type": "record",
+      "fields": [
+        { "name": "ad__sellerid", "type": [ "null", "string" ], "isPII": false, "doc": "Seller id.", "default": null, "example": "1234" },
+        { "name": "ad__id", "type": [ "null", "string" ], "isPII": false, "doc": "Id of the Ad.", "default": null, "example": "4321" },
+        { "name": "ad_view", "type": [ "null", "int" ], "isPII": false, "doc": "Total number of views (VIP).", "default": null, "example": 123},
+        { "name": "precall", "type": [ "null", "int" ], "isPII": false, "doc": "Total started calls for this ad.", "default": null, "example": 12 },
+        { "name": "postcall", "type": [ "null", "int" ], "isPII": false, "doc": "Total finished calls for this ad.", "default": null, "example": 10 },
+        { "name": "email_contact", "type": [ "null", "int" ], "isPII": false, "doc": "Total times someone contacted the seller for this ad via email.", "default": null, "example": 22 },
+        { "name": "parking", "type": [ "null", "int" ], "isPII": false, "doc": "Total times this ad has been parked.", "default": null, "example": 65 },
+        { "name": "printout", "type": [ "null", "int" ], "isPII": false, "doc": "Total times this ad has been printed out.", "default": null, "example": 12 },
+        { "name": "last_updated", "type": [ "null", { "logicalType": "timestamp-column","type": "string" } ], "isPII": false, "doc": "Last time the count was calculated.", "default": null, "example": "2023-05-07 19:37:10.411000 UTC" }
+      ]
+    }
+slas:
+  - property: frequency
+    value: "15"
+    unit: minute # every 15 minutes
+inputs:
+  - storage:
+      platform: aws
+      system: kafka
+      broker: mdeproduction
+      topic: ad_contact_events
+      link: https://datahub.mpi-internal.com/data-discovery-and-exploration/catalog/datasets/urn:li:dataset:(urn:li:dataPlatform:kafka,mdeproduction.ad_contact_events,PROD)/cost-&-usage
+  - storage:
+      platform: aws
+      system: kafka
+      broker: mdeproduction
+      topic: search_api_events
+      link: https://datahub.mpi-internal.com/data-discovery-and-exploration/catalog/datasets/urn:li:dataset:(urn:li:dataPlatform:kafka,mdeproduction.search_api_events,PROD)/cost-&-usage
+  - storage:
+      platform: aws
+      system: kafka
+      broker: mdeproduction
+      topic: freespee_call_events
+      link: https://datahub.mpi-internal.com/data-discovery-and-exploration/catalog/datasets/urn:li:dataset:(urn:li:dataPlatform:kafka,mdeproduction.freespee_call_events,PROD)/cost-&-usage
+  - storage:
+      platform: aws
+      system: kafka
+      broker: mdeproduction
+      topic: dealer_events
+      link: https://datahub.mpi-internal.com/data-discovery-and-exploration/catalog/datasets/urn:li:dataset:(urn:li:dataPlatform:kafka,mdeproduction.dealer_events,PROD)/cost-&-usage
+  - storage:
+      platform: aws
+      system: kafka
+      broker: mdeproduction
+      topic: ad_view_events
+      link: https://datahub.mpi-internal.com/data-discovery-and-exploration/catalog/datasets/urn:li:dataset:(urn:li:dataPlatform:kafka,mdeproduction.ad_view_events,PROD)/cost-&-usage
+  - storage:
+      platform: aws
+      system: kafka
+      broker: mdeproduction
+      topic: parking_events
+      link: https://datahub.mpi-internal.com/data-discovery-and-exploration/catalog/datasets/urn:li:dataset:(urn:li:dataPlatform:kafka,mdeproduction.parking_events,PROD)/cost-&-usage

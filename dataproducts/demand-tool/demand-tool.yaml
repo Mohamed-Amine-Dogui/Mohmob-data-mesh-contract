@@ -1,0 +1,13 @@
+id: demand-tool
+name: Demand Tool
+maturity: active
+dataProductOwner:
+  tenant: mobilede
+  dataDomain: pte-data-strategy
+  contact: https://tech.tools.mobint.io/application-inventory/t/mob-data-strategy
+description:
+  purpose: The Demand Tool is a product that helps our mobile.de dealers and internal users analyze the interest on their ads, and their current statistics.
+  limitation: contains a limited number of demand types to add more please contact the team. Also data here is limited to the time when certain demand types were added to the product.
+  links:
+    - https://coda.io/d/Data-Strategy_d09EgYAxEQa/Demand-Tool_sulD-#_lu5Yk
+    - https://coda.io/d/Data-Strategy-Platform-Team-mobile-de-space_dCMXoiVgk3g/Demand-Tool_suV3i#_luUXa

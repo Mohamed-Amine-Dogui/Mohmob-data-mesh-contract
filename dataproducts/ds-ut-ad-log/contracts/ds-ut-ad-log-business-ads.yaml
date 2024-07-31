@@ -1,0 +1,76 @@
+dataContractSpecification: v1.0
+metadata:
+  productId: "ds-ut-ad-log"
+  contractName: "Ad Log Business Ads"
+  contractId: "ds-ut-ad-log-business-ads"
+  version: "1.0.0"
+  startTime: 2024-07-01
+  access: https://coda.io/d/Data-Strategy_d09EgYAxEQa/Big-Query_suTNy#_luC3Q
+  description: >
+    The event is derived from ad-log event which is triggered every time an ad in mobile.de is created, updated, re-published or deleted.
+    The service that produces events consumed to produce this output port's data is https://github.es.ecg.tools/mobile-de/mdp-kafka-business-ads-filter.
+    Comments
+
+    The ad_log_business_ads table contains records whenever seller ads are created/updated, in order to estimate how long the ad stayed on our website, 
+    we need to check when the ad is deleted in the table ad_log_deleted_ads, hence the union in the example query. 
+    The result of the query is later used to generate a daily history on when the add existed on our platform and when it disappeared. 
+    Check the BigQuery BI Layer for more information.
+
+    Important columns: 
+    date: It is the event date of when the add has been modified on our platform.
+    id: It is the unique identifier of the add.
+    lifecycleStatus: It indicates the current status of the add on our platform, for exp: ACTIVE, ON_HOLD, REMOVED. EXPIRED.
+    ROW_NUMBER() OVER (PARTITION BY id, customerid_hash, version) statement should be equal to 1 to get the latest status of the add and remove any misleading de-duplications.
+
+    Further Documentation
+    Seller API Documentation: https://services.mobile.de/docs/seller-api.html#Ad_Schema
+    Related Threads: https://adevinta.slack.com/archives/C01CQMPBY57/p1704736962389389?thread_ts=1704735695.504689&cid=C01CQMPBY57
+  links:
+    - https://coda.io/d/Data-Strategy_d09EgYAxEQa/Metadata_suJWc#User-Tracking-Metadata_tuaq5/r3&view=full
+model:
+  containsPII: true
+  format: avro
+  schema: local://avro/domain/usertracking/datasources/ad-log-events/ad-log-business-ads.avsc
+output:
+  storage:
+    platform: gcp
+    system: bigquery
+    projectId: mo-data-lake-prod-k4pi
+    dataset: ad_log_events
+    table: ad_log_business_ads
+slas:
+  - property: frequency
+    value: "10 1 * * *" # every day at 1:10am.
+    unit: cron
+  - property: retention
+    value: "2"
+    unit: year
+quality:
+  - name: freshness
+    toolName: gx
+    description: checks that there's data for each partition.
+    dimension:
+      name: timeliness
+    links:
+      - https://airflow.mobilede-ds-pro-01.529745166931.cre.mpi-internal.com/dags/mobilede-ds-platform-dq-datalake/grid
+    toolSpecification:
+      checkpointName: data_lake.ad_log_events
+      expectationSuiteName: data_lake.ad_log_events.ad_log_business_ads
+  - name: average-count
+    toolName: gx
+    description: checks if the count of events per day is in the average +/- 2.5 stddev of the usual count for that day of the week, on the the last weeks.
+    dimension:
+      name: timeliness
+    links:
+      - https://airflow.mobilede-ds-pro-01.529745166931.cre.mpi-internal.com/dags/mobilede-ds-platform-dq-datalake/grid
+    toolSpecification:
+      checkpointName: data_lake.ad_log_events
+      expectationSuiteName: common.event_avg
+inputs:
+  - storage:
+      platform: aws
+      system: kafka
+      broker: mdeproduction
+      topic: ad-log-business-ads
+      link: https://datahub.mpi-internal.com/data-discovery-and-exploration/catalog/datasets/urn:li:dataset:(urn:li:dataPlatform:kafka,mdeproduction.ad-log-business-ads,PROD)/cost-&-usage
+

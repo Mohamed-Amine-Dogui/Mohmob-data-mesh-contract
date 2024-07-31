@@ -1,0 +1,44 @@
+dataContractSpecification: "v1.0"
+metadata:
+  contractName: "Dealer Total Demand"
+  contractId: "mobilede-ds-datalicious-demandtool-dealer-total-demand"
+  productId: "demand-tool"
+  version: "1.0.0"
+  startTime: 2024-02-23
+  access: https://coda.io/d/Data-Strategy_d09EgYAxEQa/Big-Query_suTNy#_luC3Q
+  description: >
+    Total Dealer Demand offers the total visits a dealer had to their Homepage through time (totals were imported from old system in MongoDB).
+    The given `sellerid` contains information about the seller/customer id.
+output:
+  storage:
+    platform: gcp
+    system: bigquery
+    projectId: mo-data-lake-prod-k4pi
+    dataset: demand
+    table: dealer_event_counts_deduplicated
+    view: dealer_total_demand
+model:
+  containsPII: true
+  format: avro
+  schema: >
+    {
+      "name": "DealerTotalDemand",
+      "type": "record",
+      "fields": [
+        { "name": "sellerid", "type": [ "null", "string" ], "isPII": false, "doc": "Seller id.", "default": null, "example": "1234" },
+        { "name": "homepage_visit", "type": [ "null", "int" ], "isPII": false, "doc": "Total times dealer got a visit in their Homepage.", "default": null, "example": 143},
+        { "name": "homepage_link_click", "type": [ "null", "int" ], "isPII": false, "doc": "Total clicks on their external homepage link.", "default": null, "example": 55 },
+        { "name": "last_updated", "type": [ "null", { "logicalType": "timestamp-column","type": "string" } ], "isPII": false, "doc": "Last time the count was calculated.", "default": null, "example": "2023-05-07 19:37:10.411000 UTC" }
+      ]
+    }
+slas:
+  - property: frequency
+    value: "15"
+    unit: minute # every 15 minutes
+inputs:
+  - storage:
+      platform: aws
+      system: kafka
+      broker: mdeproduction
+      topic: dealer_events
+      link: https://datahub.mpi-internal.com/data-discovery-and-exploration/catalog/datasets/urn:li:dataset:(urn:li:dataPlatform:kafka,mdeproduction.dealer_events,PROD)/cost-&-usage

@@ -1,0 +1,55 @@
+dataContractSpecification: "v1.0"
+metadata:
+  contractName: "Dealer Visits Per Day"
+  contractId: "mobilede-ds-datalicious-demandtool-dealer-visits-per-day"
+  productId: "demand-tool"
+  version: "1.0.0"
+  startTime: 2024-02-23
+  access: https://coda.io/d/Data-Strategy_d09EgYAxEQa/Big-Query_suTNy#_luC3Q
+  description: >
+    The 'Dealer Visits Per Day' Counts the visits per dealer and day (i.e., HomepageVisit and ExternalHomepageLinkClick).
+    The given `sellerid` contains information about the seller id or customer id. 
+    Data for this output port is only available since Sep. 2023, when these demand types were included in the product.
+output:
+  storage:
+    platform: gcp
+    system: bigquery
+    projectId: mo-data-lake-prod-k4pi
+    dataset: demand
+    table: dealer_event_counts_deduplicated
+    view: dealer_event_counts_per_day
+model:
+  containsPII: true
+  format: avro
+  schema: >
+    {
+      "name": "DealerEventCountsPerDay",
+      "type": "record",
+      "fields" : [
+        { "name": "date",
+          "type": ["null",
+          {
+            "type": "string",
+            "logicalType": "date"
+          }
+        ], "isPII": false, "doc": "date for the count.", "example": "2024-01-01"},
+        {"name": "sellerid", "type": ["null", "string"], "isPII": false, "doc": "Seller id.", "default": null, "example": "1234"},
+        {"name": "ci__name", "type": ["null", "string"], "isPII": false, "doc": "Normalized and sanitized application name, e.g. de.mobile.android.app, see m.mobile.de/svc/api-docs/api.html for a list of possible values.", "default": null, "example": "de.mobile.android.app"},
+        {"name": "publisher", "type": ["null", "string"], "isPII": false, "doc": "publisher of the ad, version 1.", "default": null, "example": "SITE-ES"},
+        {"name": "namespace", "type": ["null", "string"], "isPII": false, "doc": "dataset and event name.", "default": null, "example": "dealer_events.homepage_visit"},
+        {"name": "demand_type", "type": ["null", "string"], "isPII": false, "doc": "Demand type based on the namespace. Possible values are: homepage_visit or external_homepage_link_click.", "default": null, "example": "homepage_visit"},
+        {"name": "event_count", "type": ["null", "int"], "isPII": false, "doc": "Number of dealer events for the given date, sellerid, ci__name and demand_type..", "default": null, "example": 42},
+        {"name": "last_updated", "type": ["null", {"logicalType": "timestamp-column","type": "string"}], "isPII": false, "doc": "Last time the count was calculated.", "default": null, "example": "2023-05-07 19:37:10.411000 UTC"}
+      ]
+    }
+slas:
+  - property: frequency
+    value: "15"
+    unit: minute # every 15 minutes
+inputs:
+  - storage:
+      platform: aws
+      system: kafka
+      broker: mdeproduction
+      topic: dealer_events
+      link: https://datahub.mpi-internal.com/data-discovery-and-exploration/catalog/datasets/urn:li:dataset:(urn:li:dataPlatform:kafka,mdeproduction.dealer_events,PROD)/cost-&-usage

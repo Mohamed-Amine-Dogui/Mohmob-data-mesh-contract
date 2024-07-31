@@ -1,0 +1,62 @@
+dataContractSpecification: v1.0
+metadata:
+  productId: "ds-ut-ad-log"
+  contractName: "Ad Log Deleted Ads"
+  contractId: "ds-ut-ad-log-deleted-ads"
+  version: "1.0.0"
+  startTime: 2024-07-01
+  access: https://coda.io/d/Data-Strategy_d09EgYAxEQa/Big-Query_suTNy#_luC3Q
+  description: >
+    The event is derived from ad-log event and is triggered every time an ad in mobile.de is deleted. 
+    It stores the ads with the latest version before they are physically deleted.
+    
+    Microservice producing it: https://github.es.ecg.tools/mobile-de/mdp-deleted-ads-kafka-producer
+  links:
+    - https://coda.io/d/Data-Strategy_d09EgYAxEQa/Metadata_suJWc#User-Tracking-Metadata_tuaq5/r3&view=full
+model:
+  containsPII: true
+  format: avro
+  schema: local://avro/domain/usertracking/datasources/ad-log-events/ad-log-deleted-ads.avsc
+output:
+  storage:
+    platform: gcp
+    system: bigquery
+    projectId: mo-data-lake-prod-k4pi
+    dataset: ad_log_events
+    table: ad_log_deleted_ads
+slas:
+  - property: frequency
+    value: "10 1 * * *" # every day at 1:10am.
+    unit: cron
+  - property: retention
+    value: "2"
+    unit: year
+quality:
+  - name: freshness
+    toolName: gx
+    description: checks that there's data for each partition.
+    dimension:
+      name: timeliness
+    links:
+      - https://airflow.mobilede-ds-pro-01.529745166931.cre.mpi-internal.com/dags/mobilede-ds-platform-dq-datalake/grid
+    toolSpecification:
+      checkpointName: data_lake.ad_log_events
+      expectationSuiteName: data_lake.ad_log_events.ad_log_deleted_ads
+  - name: average-count
+    toolName: gx
+    description: checks if the count of events per day is in the average +/- 2.5 stddev of the usual count for that day of the week, on the the last weeks.
+    dimension:
+      name: timeliness
+    links:
+      - https://airflow.mobilede-ds-pro-01.529745166931.cre.mpi-internal.com/dags/mobilede-ds-platform-dq-datalake/grid
+    toolSpecification:
+      checkpointName: data_lake.ad_log_events
+      expectationSuiteName: common.event_avg
+inputs:
+  - storage:
+      platform: aws
+      system: kafka
+      broker: mdeproduction
+      topic: ad-log-business-ads
+      link: https://datahub.mpi-internal.com/data-discovery-and-exploration/catalog/datasets/urn:li:dataset:(urn:li:dataPlatform:kafka,mdeproduction.ad-log-deleted-ads,PROD)/cost-&-usage
+
